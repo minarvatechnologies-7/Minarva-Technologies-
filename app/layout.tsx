@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import AnalyticsBeacon from "@/app/components/AnalyticsBeacon";
 import "./globals.css";
 
@@ -44,7 +45,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <AnalyticsBeacon />
+        <Suspense fallback={null}>
+          <AnalyticsBeacon />
+        </Suspense>
         {children}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       </body>
