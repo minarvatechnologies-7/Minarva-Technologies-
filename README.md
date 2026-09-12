@@ -23,6 +23,8 @@ A Next.js + TypeScript platform foundation for Minarva Technologies: premium pub
 - Customer referral intake
 - Marketing automation queues for follow-ups, pending quotes and expiring warranties
 - Minarva Growth Center metrics plus service/source/location performance breakdowns
+- Admin operations queue and content/knowledge workspace for leads, reviews, FAQs, blog and projects
+- LocalBusiness structured data and canonical SEO metadata
 - Environment-variable template with secrets kept out of frontend code
 - GitHub Actions CI workflow for dependency install, Prisma validation/generation and application build
 
