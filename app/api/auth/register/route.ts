@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { createSession, hashPassword, publicUserSelect } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -10,7 +11,13 @@ const schema = z.object({
   password: z.string().min(8).max(128),
 });
 
+function clientKey(request: Request) {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
+
 export async function POST(request: Request) {
+  const throttle = rateLimit(`register:${clientKey(request)}`, 5, 15 * 60_000);
+  if (!throttle.allowed) return NextResponse.json({ ok: false, error: "Too many registration attempts" }, { status: 429 });
   try {
     const parsed = schema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ ok: false, error: "Invalid registration data" }, { status: 400 });
