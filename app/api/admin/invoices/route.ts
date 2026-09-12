@@ -12,6 +12,32 @@ const schema = z.object({
   dueAt: z.string().datetime().optional(),
 });
 
+export async function GET(request: Request) {
+  const auth = await requireUser([...roles]);
+  if (!auth.user) return auth.response!;
+  const url = new URL(request.url);
+  const q = url.searchParams.get("q")?.trim();
+  const status = url.searchParams.get("status")?.trim();
+  const invoices = await prisma.invoice.findMany({
+    where: {
+      ...(status ? { status } : {}),
+      ...(q ? { OR: [
+        { invoiceNumber: { contains: q, mode: "insensitive" } },
+        { customer: { name: { contains: q, mode: "insensitive" } } },
+        { customer: { phone: { contains: q } } },
+      ] } : {}),
+    },
+    orderBy: { issuedAt: "desc" },
+    take: 100,
+    select: {
+      id: true, invoiceNumber: true, status: true, total: true, balance: true, issuedAt: true, dueAt: true,
+      customer: { select: { id: true, name: true, phone: true, city: true } },
+      payments: { orderBy: { createdAt: "desc" }, take: 5, select: { id: true, amount: true, provider: true, reference: true, status: true, paidAt: true, createdAt: true } },
+    },
+  });
+  return NextResponse.json({ ok: true, invoices });
+}
+
 export async function POST(request: Request) {
   const auth = await requireUser([...roles]);
   if (!auth.user) return auth.response!;
