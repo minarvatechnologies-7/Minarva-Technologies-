@@ -17,7 +17,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "Invalid email or password" }, { status: 401 });
     }
     await createSession(user.id);
-    return NextResponse.json({ ok: true, user: { ...user, ...Object.fromEntries(Object.entries({ passwordHash: undefined })) } });
+    const safeUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      role: user.role,
+      active: user.active,
+    } satisfies Record<keyof typeof publicUserSelect, unknown>;
+    return NextResponse.json({ ok: true, user: safeUser });
   } catch (error) {
     console.error("login failed", error);
     return NextResponse.json({ ok: false, error: "Unable to sign in" }, { status: 500 });
