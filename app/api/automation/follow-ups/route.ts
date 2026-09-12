@@ -3,8 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { queueManagementNotification } from "@/lib/follow-ups";
 
 function authorized(request: Request) {
-  const expected = process.env.NOTIFICATION_WORKER_SECRET;
-  return Boolean(expected && request.headers.get("x-notification-worker-secret") === expected);
+  const workerSecret = process.env.NOTIFICATION_WORKER_SECRET;
+  const cronSecret = process.env.CRON_SECRET;
+  const authorization = request.headers.get("authorization");
+  const cronAuthorized = Boolean(cronSecret && authorization === `Bearer ${cronSecret}`);
+  const workerAuthorized = Boolean(workerSecret && request.headers.get("x-notification-worker-secret") === workerSecret);
+  return cronAuthorized || workerAuthorized;
 }
 
 export async function POST(request: Request) {
