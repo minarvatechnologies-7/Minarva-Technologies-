@@ -11,7 +11,7 @@ function authorized(request: Request) {
   return cronAuthorized || workerAuthorized;
 }
 
-export async function POST(request: Request) {
+async function runFollowUps(request: Request) {
   if (!authorized(request)) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
   const now = new Date();
@@ -70,3 +70,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ ok: true, queued, checked: { followUpLeads: followUpLeads.length, expiringWarranties: expiring.length } });
 }
+
+export const GET = runFollowUps;
+export const POST = runFollowUps;
