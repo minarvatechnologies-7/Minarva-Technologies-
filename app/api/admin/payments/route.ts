@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/access";
+import { prisma } from "@/lib/prisma";
 
 const roles = ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"] as const;
 const schema = z.object({
@@ -20,14 +20,17 @@ export async function POST(request: Request) {
     const parsed = schema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ ok: false, error: "Invalid payment data" }, { status: 400 });
 
-    const invoice = await prisma.invoice.findUnique({ where: { id: parsed.data.invoiceId }, select: { id: true, total: true, balance: true } });
-    if (!invoice) return NextResponse.json({ ok: false, error: "Invoice not found" }, { status: 404 });
-    if (parsed.data.amount > Number(invoice.balance)) {
-      return NextResponse.json({ ok: false, error: "Payment exceeds outstanding balance" }, { status: 400 });
-    }
-
-    const isPaid = parsed.data.status === "PAID";
     const payment = await prisma.$transaction(async (tx) => {
+      const invoice = await tx.invoice.findUnique({
+        where: { id: parsed.data.invoiceId },
+        select: { id: true, balance: true },
+      });
+      if (!invoice) throw new Error("Invoice not found");
+      if (parsed.data.status === "PAID" && parsed.data.amount > Number(invoice.balance)) {
+        throw new Error("Payment exceeds outstanding balance");
+      }
+
+      const isPaid = parsed.data.status === "PAID";
       const created = await tx.payment.create({
         data: {
           invoiceId: invoice.id,
@@ -38,22 +41,23 @@ export async function POST(request: Request) {
           paidAt: isPaid ? (parsed.data.paidAt ? new Date(parsed.data.paidAt) : new Date()) : undefined,
         },
       });
-      if (!isPaid) return created;
-
-      const newBalance = Math.max(Number(invoice.balance) - parsed.data.amount, 0);
-      await tx.invoice.update({
-        where: { id: invoice.id },
-        data: {
-          balance: newBalance,
-          status: newBalance === 0 ? "PAID" : "PARTIALLY_PAID",
-        },
-      });
+      if (isPaid) {
+        const newBalance = Math.max(Number(invoice.balance) - parsed.data.amount, 0);
+        await tx.invoice.update({
+          where: { id: invoice.id },
+          data: {
+            balance: newBalance,
+            status: newBalance === 0 ? "PAID" : "PARTIALLY_PAID",
+          },
+        });
+      }
       return created;
     });
 
     return NextResponse.json({ ok: true, paymentId: payment.id, status: payment.status });
   } catch (error) {
-    console.error("payment recording failed", error);
-    return NextResponse.json({ ok: false, error: "Unable to record payment" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Unable to record payment";
+    const status = message === "Invoice not found" ? 404 : message === "Payment exceeds outstanding balance" ? 400 : 500;
+    return NextResponse.json({ ok: false, error: message }, { status });
   }
 }
