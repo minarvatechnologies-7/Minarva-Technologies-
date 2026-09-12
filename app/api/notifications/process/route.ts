@@ -10,7 +10,7 @@ function isAuthorized(request: Request) {
   return cronAuthorized || workerAuthorized;
 }
 
-export async function POST(request: Request) {
+async function processNotifications(request: Request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
@@ -24,8 +24,6 @@ export async function POST(request: Request) {
 
   let processed = 0;
   for (const item of pending) {
-    // WEB notifications are durable in the database and ready for the UI.
-    // External channels remain queued until their provider integration is configured.
     if (item.channel === "WEB") {
       await prisma.notification.update({ where: { id: item.id }, data: { status: "SENT", sentAt: new Date() } });
       processed += 1;
@@ -38,10 +36,10 @@ export async function POST(request: Request) {
       : false;
 
     if (!configured) continue;
-
-    // Provider dispatch is intentionally isolated from queue state. A future provider adapter
-    // can claim these records idempotently without changing the business event contract.
   }
 
   return NextResponse.json({ ok: true, queued: pending.length, processed });
 }
+
+export const GET = processNotifications;
+export const POST = processNotifications;
