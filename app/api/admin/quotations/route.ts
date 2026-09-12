@@ -65,7 +65,7 @@ export async function PATCH(request: Request) {
   const parsed = updateSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ ok: false, error: "Invalid quotation status update" }, { status: 400 });
 
-  const quote = await prisma.quotation.findUnique({ where: { id: parsed.data.quoteId }, select: { id: true, status: true, validUntil: true } });
+  const quote = await prisma.quotation.findUnique({ where: { id: parsed.data.quoteId }, select: { id: true, quoteNumber: true, status: true, validUntil: true, customerId: true, total: true, customer: { select: { userId: true } } } });
   if (!quote) return NextResponse.json({ ok: false, error: "Quotation not found" }, { status: 404 });
 
   const transitionMap: Record<string, string[]> = {
@@ -83,6 +83,23 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ ok: false, error: "Cannot send an expired quotation" }, { status: 409 });
   }
 
-  const updated = await prisma.quotation.update({ where: { id: quote.id }, data: { status: parsed.data.status }, select: { id: true, quoteNumber: true, status: true, validUntil: true, updatedAt: true } });
-  return NextResponse.json({ ok: true, quote: updated });
+  const result = await prisma.$transaction(async (tx) => {
+    const updated = await tx.quotation.update({ where: { id: quote.id }, data: { status: parsed.data.status }, select: { id: true, quoteNumber: true, status: true, validUntil: true, updatedAt: true } });
+    if (parsed.data.status !== "APPROVED") return { updated, invoice: null };
+
+    const invoiceNumber = `MN-INV-${String(quote.quoteNumber).padStart(6, "0")}`;
+    const invoice = await tx.invoice.upsert({
+      where: { invoiceNumber },
+      create: { invoiceNumber, customerId: quote.customerId, total: quote.total, balance: quote.total },
+      update: {},
+      select: { id: true, invoiceNumber: true, status: true, total: true, balance: true },
+    });
+    await tx.auditLog.create({ data: { userId: auth.user.id, action: "QUOTATION_APPROVED", entity: "Quotation", entityId: quote.id, metadata: { invoiceId: invoice.id, invoiceNumber } } });
+    if (quote.customer.userId) {
+      await tx.notification.create({ data: { userId: quote.customer.userId, channel: "WEB", type: "QUOTATION_APPROVED", status: "PENDING", payload: { quoteId: quote.id, quoteNumber: quote.quoteNumber, invoiceId: invoice.id, invoiceNumber } } });
+    }
+    return { updated, invoice };
+  });
+
+  return NextResponse.json({ ok: true, quote: result.updated, invoice: result.invoice });
 }
