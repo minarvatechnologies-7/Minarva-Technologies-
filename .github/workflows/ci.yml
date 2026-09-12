@@ -9,6 +9,10 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      # CI-only placeholder: Prisma validates the schema from the env var,
+      # but these steps do not connect to a database.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/minarva_ci?schema=public
     steps:
       - name: Checkout
         uses: actions/checkout@v4
