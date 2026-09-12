@@ -3,6 +3,8 @@ import { z } from "zod";
 import { managementRoles, requireUser } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 
+const warrantyViewRoles = ["SUPER_ADMIN", "ADMIN", "SERVICE_MANAGER", "ACCOUNTANT"] as const;
+
 const warrantySchema = z.object({
   customerId: z.string().cuid(),
   productId: z.string().cuid().optional().nullable(),
@@ -22,7 +24,7 @@ const claimSchema = z.object({
 });
 
 export async function GET(request: Request) {
-  const auth = await requireUser(managementRoles);
+  const auth = await requireUser([...warrantyViewRoles]);
   if (!auth.user) return auth.response!;
   const url = new URL(request.url);
   const q = url.searchParams.get("q")?.trim();
@@ -53,7 +55,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireUser(["SUPER_ADMIN", "ADMIN", "SERVICE_MANAGER", "ACCOUNTANT"]);
+  const auth = await requireUser([...warrantyViewRoles]);
   if (!auth.user) return auth.response!;
   const parsed = warrantySchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ ok: false, error: "Invalid warranty data" }, { status: 400 });
