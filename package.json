@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:push": "prisma db push"
   },
   "dependencies": {
     "@prisma/client": "latest",
@@ -23,7 +22,6 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "prisma": "latest",
-    "tsx": "latest",
     "typescript": "latest"
   }
 }
