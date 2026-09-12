@@ -1,30 +1,40 @@
 # Minarva Technologies — Digital Business & Growth Platform
 
-A Next.js + TypeScript platform foundation for Minarva Technologies: premium public website, lead generation, CRM, service management, customer/technician portals, AI assistants, warranty, analytics and future ERP integrations.
+A Next.js + TypeScript platform foundation for Minarva Technologies: premium public website, lead generation, CRM, service management, customer/technician portals, AI assistants, warranty, analytics, marketing automation and future ERP integrations.
 
 ## Implemented so far
 - Premium, mobile-first conversion-focused public homepage
 - Equal visual importance for Computer and CCTV offerings
-- Service catalogue foundation for all requested service lines
-- Quote/enquiry funnel foundation
+- Service catalogue and dedicated service landing-page foundation
+- Quote/enquiry funnel with persistent lead intake API
 - Click-to-call and WhatsApp CTAs
 - SEO metadata, robots.txt and sitemap foundation
 - Responsive accessibility-minded semantic markup
-- Prisma/PostgreSQL production domain model for CRM, customers, service tickets, technicians, warranty, quotations, invoices/payments, projects, reviews, referrals, campaigns, conversations, notifications and audit logs
-- Validated lead intake API with source tracking and initial HOT/WARM/COLD qualification scoring
-- Validated service-ticket intake API with MN-SRV-xxxxxx public ticket IDs
-- Initial Minarva Growth Center aggregation API
+- Prisma/PostgreSQL domain model for CRM, customers, service tickets, technicians, warranty, quotations, invoices/payments, projects, reviews, referrals, campaigns, conversations, notifications, sessions and audit logs
+- Session-based authentication with role-aware access boundaries; public self-registration creates CUSTOMER accounts only
+- Customer Portal and management/admin workspace foundations
+- Technician assignment and service-operations workflows
+- Customer warranty, quotation and invoice visibility foundations
+- Quote approval/rejection and invoice/payment status architecture
+- AI assistant and structured requirement/lead-qualification foundation with CRM handoff
+- Product/catalogue, B2B and CCTV-planner architecture
+- Campaign analytics event ingestion
+- Review submission with moderation-first storage
+- Customer referral intake
+- Marketing automation queues for follow-ups, pending quotes and expiring warranties
+- Minarva Growth Center metrics plus service/source/location performance breakdowns
 - Environment-variable template with secrets kept out of frontend code
+- GitHub Actions CI workflow for dependency install, Prisma validation/generation and application build
 
 ## Architecture roadmap
 1. Public website + lead capture ✅ foundation
-2. Database + CRM ✅ schema/API foundation | auth next
-3. Customer portal + service tickets 🔧 next
-4. Technician portal + warranty
-5. AI customer/sales assistant + advanced lead qualification
-6. Quotes, invoices and payments
-7. Minarva Growth Center analytics UI
-8. Marketing automation + scalable local SEO
+2. Database + CRM ✅ foundation
+3. Customer portal + service tickets ✅ foundation
+4. Technician portal + warranty ✅ foundation
+5. AI customer/sales assistant ✅ foundation | provider connection and advanced orchestration next
+6. Quotes, invoices and payments ✅ foundation | live payment provider connection next
+7. Minarva Growth Center analytics ✅ API foundation | richer UI and historical reporting next
+8. Marketing automation + scalable local SEO ✅ foundation | channel integrations/content operations next
 9. Mobile apps + ERP integrations
 
 ## Business facts
