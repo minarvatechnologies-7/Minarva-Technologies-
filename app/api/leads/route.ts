@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { leadSources } from "@/lib/domain";
 import { rateLimit } from "@/lib/rate-limit";
+import { queueNotifications } from "@/lib/notifications";
 
 const leadSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -60,8 +61,31 @@ export async function POST(request: Request) {
         temperature: qualified.temperature,
         activities: { create: { type: "LEAD_CREATED", body: `Lead created from ${parsed.data.source}. Initial qualification: ${qualified.temperature} (${qualified.score}/100).` } },
       },
-      select: { id: true, leadNumber: true, status: true, temperature: true, score: true, createdAt: true },
+      select: { id: true, leadNumber: true, status: true, temperature: true, score: true, createdAt: true, name: true, serviceSlug: true, location: true },
     });
+
+    try {
+      const managers = await prisma.user.findMany({
+        where: { active: true, role: { in: ["SUPER_ADMIN", "ADMIN", "SALES", "SERVICE_MANAGER"] } },
+        select: { id: true },
+      });
+      await queueNotifications(managers.map((manager) => ({
+        userId: manager.id,
+        channel: "WEB" as const,
+        type: "LEAD_CREATED",
+        payload: {
+          publicLeadId: publicLeadId(lead.leadNumber),
+          name: lead.name,
+          serviceSlug: lead.serviceSlug,
+          location: lead.location,
+          temperature: lead.temperature,
+          score: lead.score,
+        },
+      })));
+    } catch (notificationError) {
+      console.error("lead notification queue failed", notificationError);
+    }
+
     return NextResponse.json({ ok: true, lead, publicLeadId: publicLeadId(lead.leadNumber) }, { status: 201 });
   } catch (error) {
     console.error("lead creation failed", error);
