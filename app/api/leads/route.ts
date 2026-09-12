@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { leadSources } from "@/lib/domain";
+import { rateLimit } from "@/lib/rate-limit";
 
 const leadSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -33,7 +34,13 @@ function publicLeadId(leadNumber: number) {
   return `MN-LEAD-${String(leadNumber).padStart(6, "0")}`;
 }
 
+function clientKey(request: Request) {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
+
 export async function POST(request: Request) {
+  const throttle = rateLimit(`lead:${clientKey(request)}`, 20, 10 * 60_000);
+  if (!throttle.allowed) return NextResponse.json({ ok: false, error: "Too many enquiries. Please try again later." }, { status: 429 });
   try {
     const parsed = leadSchema.safeParse(await request.json());
     if (!parsed.success) {
