@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { managementRoles, requireUser } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
+  const auth = await requireUser(managementRoles);
+  if (!auth.user) return auth.response!;
   try {
     const [leadCount, hotLeads, openTickets, pendingQuotes, wonLeads, paidRevenue] = await Promise.all([
       prisma.lead.count(),
