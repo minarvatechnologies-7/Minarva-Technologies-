@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { leadSources } from "@/lib/domain";
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
         location: parsed.data.location || null,
         requirement: parsed.data.requirement || null,
         budget: parsed.data.budget || null,
-        metadata: parsed.data.metadata,
+        metadata: parsed.data.metadata as Prisma.InputJsonValue | undefined,
         score: qualified.score,
         temperature: qualified.temperature,
         activities: { create: { type: "LEAD_CREATED", body: `Lead created from ${parsed.data.source}. Initial qualification: ${qualified.temperature} (${qualified.score}/100).` } },
