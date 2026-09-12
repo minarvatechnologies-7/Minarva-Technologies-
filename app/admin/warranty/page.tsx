@@ -21,7 +21,7 @@ type Product = { id: string; name: string; sku: string | null };
 
 const label = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g, (char) => char.toUpperCase());
 const formatDate = (value: string | null) => (value ? new Date(value).toLocaleDateString("en-IN") : "—");
-const isExpired = (value: string) => new Date(value) < new Date();
+const isExpired = (value: string, now: number) => new Date(value).getTime() < now;
 
 export default function WarrantyPage() {
   const router = useRouter();
@@ -32,6 +32,7 @@ export default function WarrantyPage() {
   const [status, setStatus] = useState("ALL");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [now] = useState(() => Date.now());
   const [form, setForm] = useState({ customerId: "", productId: "", serialNumber: "", invoiceRef: "", startsAt: "", expiresAt: "" });
   const [claim, setClaim] = useState({ warrantyId: "", ticketId: "", status: "OPEN", notes: "" });
 
@@ -73,13 +74,13 @@ export default function WarrantyPage() {
 
   const metrics = useMemo(() => ({
     total: warranties.length,
-    active: warranties.filter((item) => item.status === "ACTIVE" && !isExpired(item.expiresAt)).length,
+    active: warranties.filter((item) => item.status === "ACTIVE" && !isExpired(item.expiresAt, now)).length,
     expiring: warranties.filter((item) => {
       const expiry = new Date(item.expiresAt).getTime();
-      return item.status === "ACTIVE" && expiry - Date.now() <= 30 * 86400000 && expiry >= Date.now();
+      return item.status === "ACTIVE" && expiry - now <= 30 * 86400000 && expiry >= now;
     }).length,
     claims: warranties.reduce((count, item) => count + item.claims.filter((itemClaim) => !["REJECTED", "CLOSED"].includes(itemClaim.status)).length, 0),
-  }), [warranties]);
+  }), [now, warranties]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -176,7 +177,7 @@ export default function WarrantyPage() {
         {warranties.length ? warranties.map((warranty) => (
           <div className="portalRow" key={warranty.id}>
             <div><b>{warranty.serialNumber}</b><p>{warranty.product?.name || "Registered product"} · {warranty.customer.name} · {warranty.customer.phone}</p><small>Validity {formatDate(warranty.startsAt)} → {formatDate(warranty.expiresAt)} · Invoice {warranty.invoiceRef || "—"}</small></div>
-            <span>{isExpired(warranty.expiresAt) && warranty.status === "ACTIVE" ? "EXPIRED" : label(warranty.status)}<small>{warranty.claims.length} claims</small></span>
+            <span>{isExpired(warranty.expiresAt, now) && warranty.status === "ACTIVE" ? "EXPIRED" : label(warranty.status)}<small>{warranty.claims.length} claims</small></span>
           </div>
         )) : <p className="muted">No warranty records match.</p>}
       </section>
