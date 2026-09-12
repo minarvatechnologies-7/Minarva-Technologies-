@@ -4,17 +4,14 @@ import { requireUser } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 
 const statuses = [
-  "TECHNICIAN_ON_THE_WAY",
-  "INSPECTION",
-  "ESTIMATE_PENDING",
-  "CUSTOMER_APPROVAL_PENDING",
-  "WORK_IN_PROGRESS",
-  "PARTS_REQUIRED",
-  "COMPLETED",
+  "NEW", "ASSIGNED", "TECHNICIAN_ON_THE_WAY", "INSPECTION", "ESTIMATE_PENDING",
+  "CUSTOMER_APPROVAL_PENDING", "WORK_IN_PROGRESS", "PARTS_REQUIRED", "COMPLETED",
 ] as const;
-
 type Status = (typeof statuses)[number];
+
 const nextAllowed: Record<Status, Status[]> = {
+  NEW: ["TECHNICIAN_ON_THE_WAY", "INSPECTION"],
+  ASSIGNED: ["TECHNICIAN_ON_THE_WAY", "INSPECTION"],
   TECHNICIAN_ON_THE_WAY: ["INSPECTION", "ESTIMATE_PENDING", "WORK_IN_PROGRESS", "PARTS_REQUIRED"],
   INSPECTION: ["ESTIMATE_PENDING", "CUSTOMER_APPROVAL_PENDING", "WORK_IN_PROGRESS", "PARTS_REQUIRED"],
   ESTIMATE_PENDING: ["CUSTOMER_APPROVAL_PENDING", "WORK_IN_PROGRESS", "PARTS_REQUIRED"],
@@ -35,11 +32,8 @@ export async function POST(request: Request) {
   if (!auth.user) return auth.response!;
 
   let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false, error: "Invalid JSON payload" }, { status: 400 });
-  }
+  try { body = await request.json(); }
+  catch { return NextResponse.json({ ok: false, error: "Invalid JSON payload" }, { status: 400 }); }
 
   const parsed = schema.safeParse(body);
   if (!parsed.success || (!parsed.data.status && !parsed.data.note)) {
@@ -51,19 +45,13 @@ export async function POST(request: Request) {
     select: { id: true, status: true, ticketNumber: true },
   });
   if (!current) return NextResponse.json({ ok: false, error: "Assigned ticket not found" }, { status: 404 });
-
   if (current.status === "CANCELLED" || current.status === "DELIVERED") {
     return NextResponse.json({ ok: false, error: "This ticket is no longer active" }, { status: 409 });
   }
 
   const nextStatus = parsed.data.status;
-  if (nextStatus && current.status !== nextStatus) {
-    if (!(current.status in nextAllowed)) {
-      return NextResponse.json({ ok: false, error: `Status ${current.status} cannot be changed by technician` }, { status: 409 });
-    }
-    if (!nextAllowed[current.status as Status].includes(nextStatus)) {
-      return NextResponse.json({ ok: false, error: `Invalid status transition: ${current.status} → ${nextStatus}` }, { status: 409 });
-    }
+  if (nextStatus && current.status !== nextStatus && !nextAllowed[current.status as Status]?.includes(nextStatus)) {
+    return NextResponse.json({ ok: false, error: `Invalid status transition: ${current.status} → ${nextStatus}` }, { status: 409 });
   }
 
   const effectiveStatus = nextStatus ?? current.status;
