@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { managementRoles, requireUser } from "@/lib/access";
+import { requireUser } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 
 const warrantyViewRoles = ["SUPER_ADMIN", "ADMIN", "SERVICE_MANAGER", "ACCOUNTANT"] as const;
