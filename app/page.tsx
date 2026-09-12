@@ -1,3 +1,5 @@
+import LeadForm from "@/app/components/LeadForm";
+
 const services = [
   { title: "Computer Sales & Service", text: "Reliable computers, upgrades, diagnostics and technical support." },
   { title: "CCTV & Security", text: "CCTV installation, service and security solutions for homes and businesses." },
@@ -45,7 +47,7 @@ export default function Home() {
 
       <section id="projects" className="section project"><div className="projectBox"><div><p className="eyebrow">PROJECTS & KNOWLEDGE</p><h2>Turn every successful project into your next growth opportunity.</h2><p>Our platform architecture is ready for project stories, case studies, FAQs, guides and conversion-focused landing pages — without inventing customer claims or results.</p></div><a className="primary" href="#quote">Start a project <span>→</span></a></div></section>
 
-      <section id="quote" className="quote section"><div><p className="eyebrow">LET’S TALK</p><h2>Have a requirement?<br /><em>Let’s make a plan.</em></h2><p>Request a quote, site survey or consultation. Your enquiry can become a structured lead for the future CRM.</p></div><form action="mailto:minarvatechnologies@gmail.com" method="post" encType="text/plain"><label>Name<input name="name" required placeholder="Your name" /></label><label>Phone<input name="phone" required placeholder="+91" /></label><label>Service<select name="service" defaultValue=""><option value="" disabled>Select a service</option>{services.map(s => <option key={s.title}>{s.title}</option>)}</select></label><label>Requirement<textarea name="requirement" rows={4} placeholder="Tell us briefly what you need" /></label><button className="primary" type="submit">Send enquiry <span>→</span></button></form></section>
+      <section id="quote" className="quote section"><div><p className="eyebrow">LET’S TALK</p><h2>Have a requirement?<br /><em>Let’s make a plan.</em></h2><p>Request a quote, site survey or consultation. Your enquiry now enters the platform lead pipeline for qualification and follow-up.</p></div><LeadForm /></section>
 
       <footer id="contact"><div><a className="brand" href="#top">MINARVA<span>TECHNOLOGIES</span></a><p>Technology • Security • Automation • Business Solutions</p></div><div><strong>Kawdiar, Trivandrum, Kerala</strong><p>+91 62353 53732<br />minarvatechnologies@gmail.com<br />www.minarvatechnologies.com</p></div></footer>
     </main>
