@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const modules = [
-  { title: "CRM & Leads", text: "Lead pipeline, qualification, follow-ups and source tracking.", href: "/admin#crm" },
-  { title: "Customers", text: "Customer records, requests, conversations and history.", href: "/customer" },
+  { title: "CRM & Leads", text: "Lead pipeline, qualification, follow-ups and source tracking.", href: "/admin/leads" },
+  { title: "Customers", text: "Customer records, requests, conversations and history.", href: "/admin/customers" },
   { title: "Service Operations", text: "Tickets, appointments, assignment and technician workflow.", href: "/service-manager" },
   { title: "Technicians", text: "Assigned jobs, field updates, work notes and completion flow.", href: "/technician" },
   { title: "Products", text: "Customer-facing catalogue plus admin product records and specifications.", href: "/admin/products" },
