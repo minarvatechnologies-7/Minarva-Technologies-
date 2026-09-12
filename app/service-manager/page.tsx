@@ -30,6 +30,13 @@ function when(value?: string | null) {
   return value ? new Date(value).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "Not scheduled";
 }
 
+function localInputValue(value?: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 16);
+}
+
 export default function ServiceManagerPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [technicians, setTechnicians] = useState<Technician[]>([]);
@@ -41,6 +48,9 @@ export default function ServiceManagerPage() {
   const [status, setStatus] = useState("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [note, setNote] = useState("");
+  const [appointmentAt, setAppointmentAt] = useState("");
+  const [appointmentType, setAppointmentType] = useState("SERVICE_VISIT");
+  const [appointmentNotes, setAppointmentNotes] = useState("");
 
   async function load() {
     setLoading(true);
@@ -73,6 +83,14 @@ export default function ServiceManagerPage() {
     today: tickets.filter((t) => t.appointment && new Date(t.appointment.scheduledAt).toDateString() === new Date().toDateString()).length,
   };
 
+  useEffect(() => {
+    if (!selected) return;
+    setAppointmentAt(localInputValue(selected.appointment?.scheduledAt));
+    setAppointmentType("SERVICE_VISIT");
+    setAppointmentNotes("");
+    setNote("");
+  }, [selectedId]);
+
   async function mutate(ticketId: string, payload: Record<string, unknown>) {
     setBusy(ticketId);
     setError("");
@@ -90,6 +108,17 @@ export default function ServiceManagerPage() {
     } finally {
       setBusy(null);
     }
+  }
+
+  async function saveAppointment() {
+    if (!selected || !appointmentAt) return;
+    await mutate(selected.id, {
+      appointment: {
+        scheduledAt: new Date(appointmentAt).toISOString(),
+        type: appointmentType,
+        notes: appointmentNotes.trim() || null,
+      },
+    });
   }
 
   return (
@@ -124,7 +153,7 @@ export default function ServiceManagerPage() {
             <button className="secondary" onClick={() => { setQuery(""); setPriority("ALL"); setStatus("ALL"); }}>Reset</button>
           </div>
           {loading ? <p className="muted">Loading service queue…</p> : filtered.length === 0 ? <p className="muted">No active tickets match the current filters.</p> : filtered.map((ticket) => (
-            <button key={ticket.id} className="leadRow" onClick={() => { setSelectedId(ticket.id); setNote(""); }}>
+            <button key={ticket.id} className="leadRow" onClick={() => setSelectedId(ticket.id)}>
               <span style={{ textAlign: "left", flex: 1 }}><b>{ticket.publicTicketId} · {ticket.customer.name}</b><p>{label(ticket.serviceSlug)} · {ticket.problem || "Service request"}</p><small>{ticket.location || ticket.customer.city || "Location pending"}</small></span>
               <span><b>{label(ticket.priority)}</b><br />{label(ticket.status)}<small>{ticket.technician ? `Tech: ${ticket.technician.name}` : "Unassigned"}</small></span>
             </button>
@@ -139,7 +168,7 @@ export default function ServiceManagerPage() {
             <label>Priority<select value={selected.priority} onChange={(e) => void mutate(selected.id, { priority: e.target.value })} disabled={busy === selected.id}>{priorities.map((p) => <option key={p} value={p}>{label(p)}</option>)}</select></label>
             <label>Status<select value={selected.status} onChange={(e) => void mutate(selected.id, { status: e.target.value })} disabled={busy === selected.id}>{statuses.map((s) => <option key={s} value={s}>{label(s)}</option>)}</select></label>
             <label>Assign technician<select value={selected.technician?.id || ""} onChange={(e) => void mutate(selected.id, { technicianId: e.target.value || null })} disabled={busy === selected.id}><option value="">Unassigned</option>{technicians.map((tech) => <option key={tech.id} value={tech.id}>{tech.name}{tech.phone ? ` · ${tech.phone}` : ""}</option>)}</select></label>
-            <div><p className="eyebrow">APPOINTMENT</p><p className="muted">{when(selected.appointment?.scheduledAt)}</p>{selected.appointment?.status && <p className="muted">{label(selected.appointment.status)}</p>}</div>
+            <div><p className="eyebrow">APPOINTMENT</p><p className="muted">Current: {when(selected.appointment?.scheduledAt)}</p><label>Date & time<input type="datetime-local" value={appointmentAt} onChange={(e) => setAppointmentAt(e.target.value)} /></label><label>Visit type<input value={appointmentType} onChange={(e) => setAppointmentType(e.target.value)} maxLength={80} placeholder="SERVICE_VISIT" /></label><label>Appointment notes<textarea rows={2} maxLength={1000} value={appointmentNotes} onChange={(e) => setAppointmentNotes(e.target.value)} placeholder="Access instructions or scheduling details" /></label><button className="secondary" disabled={!appointmentAt || busy === selected.id} onClick={() => void saveAppointment()}>{busy === selected.id ? "Saving…" : selected.appointment ? "Reschedule appointment" : "Schedule appointment"}</button></div>
             <label>Operational note<textarea rows={4} maxLength={4000} placeholder="Add inspection, assignment or customer coordination note" value={note} onChange={(e) => setNote(e.target.value)} /></label>
             <button className="primary" disabled={!note.trim() || busy === selected.id} onClick={() => { const current = selected.status; void mutate(selected.id, { status: current, note: note.trim() }).then(() => setNote("")); }}>{busy === selected.id ? "Saving…" : "Add note to timeline"}</button>
           </div>
