@@ -2,6 +2,9 @@
   "name": "minarva-technologies-platform",
   "version": "0.3.0",
   "private": true,
+  "engines": {
+    "node": "22.18.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
