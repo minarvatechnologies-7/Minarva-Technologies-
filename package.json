@@ -1,26 +1,29 @@
 {
   "name": "minarva-technologies-platform",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "db:generate": "prisma generate",
     "db:push": "prisma db push"
   },
   "dependencies": {
     "@prisma/client": "latest",
-    "next": "latest",
+    "next": "16.3.3",
     "react": "latest",
     "react-dom": "latest",
     "zod": "latest"
   },
   "devDependencies": {
+    "@eslint/js": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "16.3.3",
     "prisma": "latest",
     "typescript": "latest"
   }
