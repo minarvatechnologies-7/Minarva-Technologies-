@@ -9,7 +9,7 @@ const modules = [
   { title: "Service Operations", text: "Tickets, appointments, assignment and technician workflow.", href: "/service-manager" },
   { title: "Technicians", text: "Assigned jobs, field updates, work notes and completion flow.", href: "/technician" },
   { title: "Products", text: "Customer-facing catalogue plus admin product records and specifications.", href: "/admin/products" },
-  { title: "Warranty", text: "Warranty lookup and claims foundation for post-sale support.", href: "/customer" },
+  { title: "Warranty", text: "Warranty registration, serial lookup, expiry monitoring and claims.", href: "/admin/warranty" },
   { title: "Quotes & Invoices", text: "Quotation approvals, invoices, payments and balances.", href: "/admin#finance" },
   { title: "Content & SEO", text: "Projects, blog, FAQs and search-focused business content.", href: "/admin/content" },
   { title: "AI Assistant", text: "Customer assistance, qualification and CRM handoff.", href: "/ai" },
