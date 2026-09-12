@@ -34,35 +34,26 @@ export default function AdminLeadsPage() {
   useEffect(() => { load().catch(e => setError(e instanceof Error ? e.message : "Unable to load leads")); }, [router]);
 
   async function openLead(lead: any) {
-    const response = await fetch(`/api/admin/leads/${lead.id}`);
+    const response = await fetch(`/api/admin/lead-detail?leadId=${encodeURIComponent(lead.id)}`);
     const body = await response.json();
     if (!response.ok) { setError(body.error || "Unable to load lead"); return; }
-    setSelected(body.lead);
-    setNote("");
+    setSelected(body.lead); setNote(""); setMessage("");
   }
 
   async function save() {
     if (!selected) return;
     setError(""); setMessage("");
-    const response = await fetch(`/api/admin/leads/${selected.id}`, {
-      method: "PATCH", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: selected.status, temperature: selected.temperature, followUpAt: selected.followUpAt ? new Date(selected.followUpAt).toISOString() : null, note: note.trim() || undefined }),
-    });
+    const response = await fetch("/api/admin/lead-detail", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ leadId: selected.id, status: selected.status, temperature: selected.temperature, followUpAt: selected.followUpAt ? new Date(selected.followUpAt).toISOString() : null, note: note.trim() || undefined }) });
     const body = await response.json();
     if (!response.ok) { setError(body.error || "Unable to update lead"); return; }
-    setMessage("Lead updated.");
-    setSelected({ ...selected, ...body.lead });
-    setNote("");
-    await load();
+    setMessage("Lead updated."); setSelected({ ...selected, ...body.lead }); setNote(""); await load();
   }
 
   return (
     <main className="portalPage">
       <header className="portalHeader"><a className="brand" href="/admin">MINARVA<span>TECHNOLOGIES</span></a><div><span>CRM & LEADS</span><a className="textButton" href="/admin">Control Center</a></div></header>
       <section className="portalHero"><div><p className="eyebrow">CRM WORKSPACE</p><h1>Move every lead forward.</h1><p>Filter opportunities, inspect qualification signals, schedule follow-ups and keep every sales action traceable.</p></div></section>
-      <section className="portalPanel" style={{ margin: "0 6vw 18px" }}>
-        <div className="filterBar"><input value={q} onChange={e => setQ(e.target.value)} placeholder="Search name, phone or email" /><select value={status} onChange={e => setStatus(e.target.value)}><option value="">All stages</option>{stages.map(s => <option key={s} value={s}>{s.replaceAll("_", " ")}</option>)}</select><select value={temperature} onChange={e => setTemperature(e.target.value)}><option value="">All temperatures</option>{temperatures.map(t => <option key={t} value={t}>{t}</option>)}</select><button className="secondary" onClick={() => load().catch(e => setError(e.message))}>Apply</button></div>
-      </section>
+      <section className="portalPanel" style={{ margin: "0 6vw 18px" }}><div className="filterBar"><input value={q} onChange={e => setQ(e.target.value)} placeholder="Search name, phone or email" /><select value={status} onChange={e => setStatus(e.target.value)}><option value="">All stages</option>{stages.map(s => <option key={s} value={s}>{s.replaceAll("_", " ")}</option>)}</select><select value={temperature} onChange={e => setTemperature(e.target.value)}><option value="">All temperatures</option>{temperatures.map(t => <option key={t} value={t}>{t}</option>)}</select><button className="secondary" onClick={() => load().catch(e => setError(e.message))}>Apply</button></div></section>
       {error && <div className="portalAlert" style={{ margin: "0 6vw 18px" }}>{error}</div>}
       <section className="portalGrid" style={{ gridTemplateColumns: selected ? "1.25fr .75fr" : "1fr" }}>
         <article className="portalPanel"><div className="panelTitle"><h2>Lead pipeline</h2><span>{leads.length} shown</span></div>{leads.length ? leads.map(lead => <button className="leadRow" key={lead.id} onClick={() => openLead(lead)}><div><b>MN-LEAD-{String(lead.leadNumber).padStart(6, "0")} · {lead.name}</b><p>{lead.serviceSlug} · {lead.source} · {lead.location || "Location not supplied"}</p></div><span>{lead.temperature} · {lead.score}<small>{lead.status.replaceAll("_", " ")}</small></span></button>) : <p className="muted">No leads match the current filters.</p>}</article>
