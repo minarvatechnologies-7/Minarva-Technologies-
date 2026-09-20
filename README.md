@@ -1,3 +1,17 @@
+
+## Public website redesign (2026)
+
+The public-facing Minarva Technologies website has been redesigned with a premium blue/white visual system and conversion-focused structure while preserving the existing CRM, admin, customer portal, technician portal, APIs, Prisma schema and automation features.
+
+Key public-site updates:
+- Official Minarva Technologies logo asset integrated into the header/footer
+- Responsive homepage for CCTV, computers, networking, automation, solar/power and business solutions
+- WhatsApp/call/email CTAs and lead capture flow
+- CCTV visual showcase and planner entry point
+- Updated public service/product/business pages
+- Local SEO metadata for Thiruvananthapuram
+- Mobile navigation, FAQ, contact section and floating support CTAs
+
 # Minarva Technologies — Digital Business & Growth Platform
 
 A Next.js + TypeScript platform foundation for Minarva Technologies: premium public website, lead generation, CRM, service management, customer/technician portals, AI assistants, warranty, analytics, marketing automation and future ERP integrations.

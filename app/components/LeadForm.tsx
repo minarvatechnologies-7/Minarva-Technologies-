@@ -3,9 +3,11 @@
 import { useState } from "react";
 
 const services = [
-  ["Computer Sales & Service", "computer-sales-service"],
   ["CCTV & Security", "cctv-installation"],
+  ["Computer Sales & Service", "computer-sales-service"],
+  ["Networking & Wi-Fi", "computer-sales-service"],
   ["Home Automation", "home-automation"],
+  ["Biometric & Access Control", "home-automation"],
   ["Gate Automation", "gate-automation"],
   ["Solar Solutions", "solar-solutions"],
   ["Inverter Solutions", "inverter-solutions"],
@@ -49,14 +51,18 @@ export default function LeadForm() {
   }
 
   return (
-    <form onSubmit={submit}>
-      <label>Name<input name="name" required placeholder="Your name" /></label>
-      <label>Phone<input name="phone" required placeholder="+91" inputMode="tel" /></label>
-      <label>Email<input name="email" type="email" placeholder="you@example.com" /></label>
-      <label>Location<input name="location" placeholder="Trivandrum / Kerala" /></label>
+    <form className="site-lead-form" onSubmit={submit}>
+      <div className="site-form-row">
+        <label>Name<input name="name" required placeholder="Your name" /></label>
+        <label>Phone<input name="phone" required placeholder="+91" inputMode="tel" /></label>
+      </div>
+      <div className="site-form-row">
+        <label>Email<input name="email" type="email" placeholder="you@example.com" /></label>
+        <label>Location<input name="location" placeholder="Thiruvananthapuram" /></label>
+      </div>
       <label>Service<select name="service" defaultValue="" required><option value="" disabled>Select a service</option>{services.map(([label]) => <option key={label}>{label}</option>)}</select></label>
-      <label>Requirement<textarea name="requirement" rows={4} placeholder="Tell us briefly what you need" /></label>
-      <button className="primary" type="submit" disabled={state === "loading"}>{state === "loading" ? "Sending…" : "Send enquiry"} <span>→</span></button>
+      <label>Requirement<textarea name="requirement" rows={5} placeholder="Tell us briefly what you need — property type, quantity, service issue, etc." /></label>
+      <button className="site-btn site-btn-primary site-form-submit" type="submit" disabled={state === "loading"}>{state === "loading" ? "Sending…" : "Send Enquiry"} <span>→</span></button>
       {message && <p role="status" aria-live="polite" className={state === "error" ? "formError" : "formSuccess"}>{message}</p>}
     </form>
   );

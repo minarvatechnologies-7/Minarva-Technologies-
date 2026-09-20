@@ -6,17 +6,26 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.minarvatechnologies.com"),
   title: {
-    default: "Minarva Technologies | Technology, Security & Automation Solutions",
+    default: "Minarva Technologies | CCTV, Computer, Networking & Smart Solutions",
     template: "%s | Minarva Technologies",
   },
   description:
-    "Premium technology, security, automation and business solutions from Minarva Technologies, Kawdiar, Trivandrum.",
+    "Minarva Technologies provides CCTV installation, computer sales and service, networking, smart home, solar, inverter and business technology solutions in Thiruvananthapuram, Kerala.",
+  keywords: [
+    "CCTV installation Thiruvananthapuram",
+    "computer service Thiruvananthapuram",
+    "networking solutions Kerala",
+    "home automation Thiruvananthapuram",
+    "solar inverter solutions",
+    "Minarva Technologies",
+  ],
   openGraph: {
     title: "Minarva Technologies",
-    description: "Technology • Security • Automation • Business Solutions",
+    description: "Security • IT • Networking • Smart Home • Solar & Power Solutions",
     type: "website",
     locale: "en_IN",
     siteName: "Minarva Technologies",
+    url: "https://www.minarvatechnologies.com",
   },
   alternates: { canonical: "https://www.minarvatechnologies.com" },
   robots: { index: true, follow: true },
@@ -29,16 +38,24 @@ const structuredData = {
   url: "https://www.minarvatechnologies.com",
   telephone: "+91 6235353732",
   email: "minarvatechnologies@gmail.com",
-  foundingDate: "2013",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Kawdiar",
     addressLocality: "Thiruvananthapuram",
     addressRegion: "Kerala",
     addressCountry: "IN",
   },
   areaServed: ["Thiruvananthapuram", "Kerala"],
-  knowsAbout: ["Computer Sales & Service", "CCTV Camera Installation & Service", "Home Automation", "Gate Automation", "Solar Panel Solutions", "Inverter Solutions", "Business Management ERP Software", "Website Development"],
+  knowsAbout: [
+    "CCTV Camera Installation & Service",
+    "Computer & Laptop Sales and Service",
+    "Networking & Wi-Fi",
+    "Home Automation",
+    "Biometric & Access Control",
+    "Solar Solutions",
+    "Inverter Solutions",
+    "Business ERP Software",
+    "Website Development",
+  ],
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
